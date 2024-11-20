@@ -1,4 +1,3 @@
-
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
 # rbqmR
@@ -1072,7 +1071,7 @@ Pharmaceutical Company.” *PharmaSUG*.
 
 Katz D, Azen SP, Baptista J. 1978. “Obtaining Confidence Intervals for
 the Risk Ratio in Cohort Studies.” *Biometrics* 34 (3): 469–74.
-https://doi.org/<https://doi.org/10.2307/2530610>.
+https://doi.org/<https://doi.org/0.2307/2530610>.
 
 </div>
 
@@ -1088,3 +1087,35 @@ report. Transcelerate Biopharma Inc. 2020.
 # pytorch-dtk
 # remove_bg
 # githubReceipt
+
+```
+GitHub Receipt Generator
+
+A modern, elegant web application that generates beautiful receipts from your GitHub profile data. Built with pure HTML and TailwindCSS.
+
+## Features
+
+- Generate detailed GitHub activity receipts
+- Share receipts with others
+- Download receipts as images
+- Modern, Apple-inspired design
+- Fully responsive layout
+- No backend required - runs entirely in the browser
+
+## Getting Started
+
+1. Clone this repository
+2. Open `index.html` in your browser
+3. Enter a GitHub username
+4. Click "Generate Receipt"
+
+## Technologies Used
+
+- HTML5
+- TailwindCSS (via CDN)
+- GitHub API
+- html2canvas for image generation
+
+## Live Demo
+
+Simply open `index.html` in your web browser to try it out!

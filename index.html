@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Receipt Generator</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="apple-touch-icon" href="/favicon.svg">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#007AFF',
+                        secondary: '#1C1C1E',
+                        accent: '#5856D6',
+                    },
+                    fontFamily: {
+                        'receipt': ['Courier Prime', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .receipt-border {
+            border: 2px dashed #ccc;
+            position: relative;
+        }
+        .receipt-border::before {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 20px;
+            height: 20px;
+            background: white;
+            border: 2px dashed #ccc;
+            border-radius: 50%;
+        }
+        .receipt-border::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 20px;
+            height: 20px;
+            background: white;
+            border: 2px dashed #ccc;
+            border-radius: 50%;
+        }
+    </style>
+</head>
+<body class="bg-white text-gray-900">
+    <!-- Header -->
+    <header class="fixed w-full bg-white/80 backdrop-blur-md z-50 border-b border-gray-100">
+        <nav class="container mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="text-2xl font-bold text-primary">GitReceipt</div>
+                <div class="hidden md:flex space-x-8">
+                    <a href="#features" class="hover:text-primary">Features</a>
+                    <a href="#how-it-works" class="hover:text-primary">How it Works</a>
+                    <a href="#pricing" class="hover:text-primary">Pricing</a>
+                    <a href="#faq" class="hover:text-primary">FAQ</a>
+                </div>
+                <a href="#generate" class="bg-primary text-white px-6 py-2 rounded-full hover:bg-blue-600 transition">Get Started</a>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="pt-32 pb-20 px-6">
+        <div class="container mx-auto text-center">
+            <h1 class="text-5xl md:text-6xl font-bold mb-6">Transform Your GitHub Activity Into Beautiful Receipts</h1>
+            <p class="text-xl text-gray-600 mb-12 max-w-2xl mx-auto">Generate elegant, shareable receipts showcasing your GitHub contributions, repositories, and coding journey.</p>
+            <div id="generate" class="max-w-md mx-auto">
+                <input type="text" id="username" placeholder="Enter GitHub username" class="w-full px-6 py-3 rounded-full border border-gray-300 focus:outline-none focus:border-primary mb-4">
+                <button onclick="generateReceipt()" class="w-full bg-primary text-white px-6 py-3 rounded-full hover:bg-blue-600 transition">Generate Receipt</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Receipt Display Section -->
+    <section id="receipt-section" class="hidden py-20 px-6 bg-gray-50">
+        <div class="container mx-auto">
+            <div id="receipt" class="max-w-md mx-auto bg-white p-8 font-receipt receipt-border">
+                <div class="text-center mb-6 border-b-2 border-dashed pb-4">
+                    <h2 class="text-2xl font-bold mb-2">GITHUB RECEIPT</h2>
+                    <p id="receipt-date" class="text-gray-600"></p>
+                    <p class="text-gray-600">ORDER #<span id="order-number"></span></p>
+                </div>
+                <div class="mb-6 border-b-2 border-dashed pb-4">
+                    <p class="font-bold">CUSTOMER:</p>
+                    <p id="customer-name" class="text-lg"></p>
+                    <p id="customer-username" class="text-gray-600"></p>
+                </div>
+                <div class="space-y-2 mb-6 border-b-2 border-dashed pb-4">
+                    <div class="flex justify-between">
+                        <span>REPOSITORIES</span>
+                        <span id="repos-count"></span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>STARS EARNED</span>
+                        <span id="stars-count">0</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>REPO FORKS</span>
+                        <span id="forks-count">0</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>FOLLOWERS</span>
+                        <span id="followers-count"></span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>FOLLOWING</span>
+                        <span id="following-count"></span>
+                    </div>
+                </div>
+                <div class="mb-6 border-b-2 border-dashed pb-4">
+                    <p class="font-bold mb-2">TOP LANGUAGES:</p>
+                    <p id="top-languages" class="text-gray-600"></p>
+                </div>
+                <div class="mb-6 border-b-2 border-dashed pb-4">
+                    <p class="font-bold">MOST ACTIVE DAY:</p>
+                    <p id="active-day" class="text-gray-600">Sunday</p>
+                </div>
+                <div class="mb-6 border-b-2 border-dashed pb-4">
+                    <p class="font-bold">COMMITS (30d):</p>
+                    <p id="commits-count" class="text-gray-600">0</p>
+                </div>
+                <div class="mb-6 border-b-2 border-dashed pb-4">
+                    <p class="font-bold">CONTRIBUTION SCORE:</p>
+                    <p id="contribution-score" class="text-gray-600">0</p>
+                </div>
+                <div class="mb-6 border-b-2 border-dashed pb-4">
+                    <p class="font-bold">SERVED BY:</p>
+                    <p class="text-gray-600">Linus Torvalds</p>
+                    <p id="serve-time" class="text-gray-600"></p>
+                </div>
+                <div class="mb-6 border-b-2 border-dashed pb-4">
+                    <p class="font-bold mb-2">COUPON CODE:</p>
+                    <p id="coupon-code" class="text-xl font-bold"></p>
+                    <p class="text-sm text-gray-600 mt-1">Save for your next commit!</p>
+                </div>
+                <div class="mb-6 border-b-2 border-dashed pb-4">
+                    <p class="font-bold mb-2">CARD INFO:</p>
+                    <p>CARD #: **** **** **** 2024</p>
+                    <p id="auth-code" class="mb-2">AUTH CODE: 113335</p>
+                    <p id="cardholder" class="uppercase"></p>
+                </div>
+                <div class="text-center mb-6">
+                    <svg id="barcode" class="mx-auto mb-4"></svg>
+                    <p class="text-xl font-bold">THANK YOU FOR CODING!</p>
+                    <p id="github-link" class="text-primary"></p>
+                </div>
+            </div>
+            <div class="flex justify-center space-x-4 mt-6">
+                <button onclick="shareReceipt()" class="bg-primary text-white px-6 py-2 rounded-full hover:bg-blue-600 transition">Share Receipt</button>
+                <button onclick="downloadReceipt()" class="bg-secondary text-white px-6 py-2 rounded-full hover:bg-gray-800 transition">Download Receipt</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="py-20 px-6">
+        <div class="container mx-auto">
+            <h2 class="text-4xl font-bold text-center mb-12">Features</h2>
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="text-center p-6">
+                    <div class="text-primary text-4xl mb-4">📊</div>
+                    <h3 class="text-xl font-bold mb-4">Detailed Analytics</h3>
+                    <p class="text-gray-600">Comprehensive overview of your GitHub activity and contributions.</p>
+                </div>
+                <div class="text-center p-6">
+                    <div class="text-primary text-4xl mb-4">🎨</div>
+                    <h3 class="text-xl font-bold mb-4">Beautiful Design</h3>
+                    <p class="text-gray-600">Elegantly designed receipts that are perfect for sharing.</p>
+                </div>
+                <div class="text-center p-6">
+                    <div class="text-primary text-4xl mb-4">🚀</div>
+                    <h3 class="text-xl font-bold mb-4">Instant Generation</h3>
+                    <p class="text-gray-600">Generate your receipt in seconds with just your username.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How it Works Section -->
+    <section id="how-it-works" class="py-20 px-6 bg-gray-50">
+        <div class="container mx-auto">
+            <h2 class="text-4xl font-bold text-center mb-12">How it Works</h2>
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="text-center">
+                    <div class="text-3xl font-bold text-primary mb-4">1</div>
+                    <h3 class="text-xl font-bold mb-4">Enter Username</h3>
+                    <p class="text-gray-600">Simply input your GitHub username</p>
+                </div>
+                <div class="text-center">
+                    <div class="text-3xl font-bold text-primary mb-4">2</div>
+                    <h3 class="text-xl font-bold mb-4">Generate Receipt</h3>
+                    <p class="text-gray-600">Click generate to create your unique receipt</p>
+                </div>
+                <div class="text-center">
+                    <div class="text-3xl font-bold text-primary mb-4">3</div>
+                    <h3 class="text-xl font-bold mb-4">Share & Download</h3>
+                    <p class="text-gray-600">Share your receipt or download it as an image</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-secondary text-white py-12 px-6">
+        <div class="container mx-auto">
+            <div class="grid md:grid-cols-4 gap-8">
+                <div>
+                    <h3 class="text-xl font-bold mb-4">GitReceipt</h3>
+                    <p class="text-gray-400">Showcase your GitHub contributions in style.</p>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-4">Quick Links</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="#features" class="hover:text-white">Features</a></li>
+                        <li><a href="#how-it-works" class="hover:text-white">How it Works</a></li>
+                        <li><a href="#pricing" class="hover:text-white">Pricing</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-4">Legal</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="#" class="hover:text-white">Privacy Policy</a></li>
+                        <li><a href="#" class="hover:text-white">Terms of Service</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-4">Connect</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="#" class="hover:text-white">Twitter</a></li>
+                        <li><a href="#" class="hover:text-white">GitHub</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400">
+                <p>&copy; 2024 GitReceipt. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        function generateCouponCode() {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let code = '';
+            for (let i = 0; i < 6; i++) {
+                code += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return code;
+        }
+
+        async function generateReceipt() {
+            const username = document.getElementById('username').value;
+            if (!username) return;
+
+            try {
+                const response = await fetch(`https://api.github.com/users/${username}`);
+                const userData = await response.json();
+
+                if (response.status === 404) {
+                    alert('User not found');
+                    return;
+                }
+
+                // Get repositories for language statistics
+                const reposResponse = await fetch(`https://api.github.com/users/${username}/repos`);
+                const reposData = await reposResponse.json();
+
+                // Calculate language statistics
+                const languages = {};
+                reposData.forEach(repo => {
+                    if (repo.language) {
+                        languages[repo.language] = (languages[repo.language] || 0) + 1;
+                    }
+                });
+
+                const topLanguages = Object.entries(languages)
+                    .sort((a, b) => b[1] - a[1])
+                    .slice(0, 3)
+                    .map(([lang]) => lang)
+                    .join(', ');
+
+                // Calculate total stars and forks
+                const stars = reposData.reduce((acc, repo) => acc + repo.stargazers_count, 0);
+                const forks = reposData.reduce((acc, repo) => acc + repo.forks_count, 0);
+
+                // Update receipt with user data
+                document.getElementById('receipt-date').textContent = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+                document.getElementById('order-number').textContent = Math.floor(Math.random() * 10000);
+                document.getElementById('customer-name').textContent = userData.name || username;
+                document.getElementById('customer-username').textContent = `@${username}`;
+                document.getElementById('repos-count').textContent = userData.public_repos;
+                document.getElementById('stars-count').textContent = stars;
+                document.getElementById('forks-count').textContent = forks;
+                document.getElementById('followers-count').textContent = userData.followers;
+                document.getElementById('following-count').textContent = userData.following;
+                document.getElementById('top-languages').textContent = topLanguages || 'None';
+                document.getElementById('github-link').textContent = `github.com/${username}`;
+                document.getElementById('serve-time').textContent = new Date().toLocaleTimeString('en-US');
+                document.getElementById('coupon-code').textContent = generateCouponCode();
+                document.getElementById('cardholder').textContent = username.toUpperCase();
+
+                // Generate barcode
+                JsBarcode("#barcode", username, {
+                    format: "CODE128",
+                    width: 1.5,
+                    height: 50,
+                    displayValue: false
+                });
+
+                // Show receipt section
+                document.getElementById('receipt-section').classList.remove('hidden');
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error fetching GitHub data');
+            }
+        }
+
+        async function downloadReceipt() {
+            const receipt = document.getElementById('receipt');
+            try {
+                const canvas = await html2canvas(receipt);
+                const link = document.createElement('a');
+                link.download = 'github-receipt.png';
+                link.href = canvas.toDataURL();
+                link.click();
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error generating image');
+            }
+        }
+
+        function shareReceipt() {
+            const username = document.getElementById('username').value;
+            const shareUrl = `${window.location.origin}${window.location.pathname}?username=${username}`;
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: 'My GitHub Receipt',
+                    text: 'Check out my GitHub Receipt!',
+                    url: shareUrl
+                }).catch(console.error);
+            } else {
+                // Fallback to copying to clipboard
+                navigator.clipboard.writeText(shareUrl)
+                    .then(() => alert('Share link copied to clipboard!'))
+                    .catch(console.error);
+            }
+        }
+
+        // Check for username in URL params on load
+        window.addEventListener('load', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const username = urlParams.get('username');
+            if (username) {
+                document.getElementById('username').value = username;
+                generateReceipt();
+            }
+        });
+    </script>
+</body>
+</html>
