@@ -2,6 +2,8 @@
 
 A modern, elegant web application that generates stylish receipts from your GitHub profile data. Built with pure HTML and TailwindCSS, this project creates beautiful, shareable receipts showcasing your GitHub contributions and activity.
 
+![github_receipt_delta vercel app__how_it_works_2024_11_20_16_27_35](https://github.com/user-attachments/assets/10945772-b169-4ffa-8ef0-24dab4625565)
+
 ## ✨ Features
 
 - **Instant Receipt Generation**: Enter any GitHub username and get a beautifully formatted receipt
