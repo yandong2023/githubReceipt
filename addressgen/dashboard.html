@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>控制面板 - 全球地址生成器Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50">
+    <nav class="bg-white shadow">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex">
+                    <div class="flex-shrink-0 flex items-center">
+                        <h1 class="text-xl font-bold">地址生成器Pro</h1>
+                    </div>
+                </div>
+                <div class="flex items-center">
+                    <button id="logoutBtn" class="text-gray-500 hover:text-gray-700">
+                        退出登录
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <!-- 使用统计卡片 -->
+        <div class="bg-white overflow-hidden shadow rounded-lg divide-y divide-gray-200">
+            <div class="px-4 py-5 sm:p-6">
+                <div class="grid grid-cols-1 gap-5 sm:grid-cols-3">
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <h3 class="text-lg font-medium text-gray-900">当前套餐</h3>
+                        <p class="mt-1 text-3xl font-semibold text-indigo-600" id="currentPlan">-</p>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <h3 class="text-lg font-medium text-gray-900">已使用次数</h3>
+                        <p class="mt-1 text-3xl font-semibold text-indigo-600" id="usageCount">-</p>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <h3 class="text-lg font-medium text-gray-900">剩余次数</h3>
+                        <p class="mt-1 text-3xl font-semibold text-indigo-600" id="remainingCount">-</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 地址生成器 -->
+        <div class="mt-8 bg-white shadow sm:rounded-lg">
+            <div class="px-4 py-5 sm:p-6">
+                <h3 class="text-lg leading-6 font-medium text-gray-900">
+                    生成地址
+                </h3>
+                <div class="mt-5">
+                    <form id="generateForm" class="space-y-4">
+                        <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">国家</label>
+                                <select id="country" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                                    <option value="us">美国</option>
+                                    <option value="gb">英国</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">数量</label>
+                                <input type="number" id="count" min="1" max="100" value="1" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">格式</label>
+                                <select id="format" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                                    <option value="json">JSON</option>
+                                    <option value="xlsx">Excel</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div>
+                            <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                生成地址
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- 升级提示 -->
+        <div id="upgradeBanner" class="mt-8 bg-indigo-600 rounded-lg shadow-xl hidden">
+            <div class="max-w-7xl mx-auto py-3 px-3 sm:px-6 lg:px-8">
+                <div class="flex items-center justify-between flex-wrap">
+                    <div class="w-0 flex-1 flex items-center">
+                        <p class="ml-3 font-medium text-white truncate">
+                            <span class="md:hidden">升级到专业版获取无限使用次数！</span>
+                            <span class="hidden md:inline">想要生成更多地址？升级到专业版即可获得无限次数的地址生成权限！</span>
+                        </p>
+                    </div>
+                    <div class="order-3 mt-2 flex-shrink-0 w-full sm:order-2 sm:mt-0 sm:w-auto">
+                        <button id="upgradeBtn" class="flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-indigo-600 bg-white hover:bg-indigo-50">
+                            立即升级
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 检查登录状态
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = '/login.html';
+        }
+
+        // 获取使用统计
+        async function fetchUsage() {
+            try {
+                const response = await fetch('/api/usage', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                const data = await response.json();
+                
+                document.getElementById('currentPlan').textContent = data.plan === 'free' ? '免费版' : '专业版';
+                document.getElementById('usageCount').textContent = data.usage;
+                document.getElementById('remainingCount').textContent = data.remaining;
+                
+                // 显示升级提示
+                if (data.plan === 'free' && data.usage > 80) {
+                    document.getElementById('upgradeBanner').classList.remove('hidden');
+                }
+            } catch (error) {
+                console.error('获取使用统计失败:', error);
+            }
+        }
+
+        // 生成地址
+        document.getElementById('generateForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const country = document.getElementById('country').value;
+            const count = document.getElementById('count').value;
+            const format = document.getElementById('format').value;
+
+            try {
+                const response = await fetch('/api/address/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ country, count, format })
+                });
+
+                if (format === 'xlsx') {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'addresses.xlsx';
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                } else {
+                    const data = await response.json();
+                    console.log('生成的地址:', data.addresses);
+                    alert('地址生成成功！');
+                }
+
+                // 更新使用统计
+                fetchUsage();
+            } catch (error) {
+                alert('生成地址失败，请重试');
+            }
+        });
+
+        // 升级按钮点击事件
+        document.getElementById('upgradeBtn').addEventListener('click', async () => {
+            try {
+                const response = await fetch('/api/subscribe', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                const data = await response.json();
+                window.location.href = data.url;
+            } catch (error) {
+                alert('创建订阅失败，请重试');
+            }
+        });
+
+        // 退出登录
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            localStorage.removeItem('token');
+            window.location.href = '/login.html';
+        });
+
+        // 初始加载
+        fetchUsage();
+    </script>
+</body>
+</html>

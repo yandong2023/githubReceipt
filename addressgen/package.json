@@ -1,0 +1,22 @@
+{
+  "name": "address-generator-pro",
+  "version": "1.0.0",
+  "description": "Professional Address Generator with Advanced Features",
+  "main": "index.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js"
+  },
+  "dependencies": {
+    "axios": "^1.7.8",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.18.2",
+    "md5": "^2.3.0",
+    "mongoose": "^7.0.0",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.22"
+  }
+}
