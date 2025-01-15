@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "target": "es5",
+    "module": "commonjs",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "lib": ["dom", "es5", "es2015.promise"]
+  },
+  "include": [
+    "src/content/content.ts"
+  ],
+  "exclude": ["node_modules"]
+} 
